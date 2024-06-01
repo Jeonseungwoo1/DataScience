@@ -8,23 +8,23 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, silhouette_samples
 import numpy as np
 
-# 데이터프레임 로드
+# Load the dataframe
 df = pd.read_csv('Video_Games_Sales_as_at_22_Dec_2016.csv')
 
-# 필요한 컬럼만 선택
+# Select necessary columns
 df = df[['Platform', 'Genre', 'Global_Sales', 'User_Score', 'Critic_Score']]
 
-# 결측값 처리
+# Handle missing values
 df = df.dropna()
 
-# User_Score와 Critic_Score를 float로 변환
+# Convert User_Score and Critic_Score to float
 df['User_Score'] = pd.to_numeric(df['User_Score'], errors='coerce')
 df['Critic_Score'] = pd.to_numeric(df['Critic_Score'], errors='coerce')
 
-# 결측값 처리
+# Handle missing values
 df = df.dropna()
 
-# 특성 선택 및 스케일링, 인코딩
+# Feature selection and scaling, encoding
 numeric_features = ['Global_Sales', 'User_Score', 'Critic_Score']
 categorical_features = ['Platform', 'Genre']
 
@@ -34,17 +34,15 @@ preprocessor = ColumnTransformer(
         ('cat', OneHotEncoder(), categorical_features)
     ])
 
-# 데이터를 파이프라인에 넣고 변환
+# Transform the data using the pipeline
 pipeline = Pipeline(steps=[('preprocessor', preprocessor)])
 features_scaled = pipeline.fit_transform(df)
 
-
-# K-평균 군집화 파이프라인
+# K-Means clustering pipeline
 kmeans = KMeans(n_clusters=4, random_state=42)
 df['Cluster'] = kmeans.fit_predict(features_scaled)
 
-
-# 군집화 결과 시각화 (2D 투영)
+# Visualize clustering results (2D projection)
 plt.figure(figsize=(15,8))
 sns.scatterplot(data=df, x='Global_Sales', y='User_Score', hue='Cluster', palette='tab10', s=50, edgecolor='w', alpha=0.75)
 plt.title('K-Means Clustering of Video Games')
@@ -61,15 +59,13 @@ plt.ylabel('Critic Score')
 plt.legend(title='Cluster')
 plt.show()
 
-
-# 각 클러스터의 특성 분석
+# Analyze characteristics of each cluster
 for cluster in df['Cluster'].unique():
     print(f"Cluster {cluster}")
     print(df[df['Cluster'] == cluster][['Platform', 'Genre', 'Global_Sales', 'User_Score', 'Critic_Score']].describe())
     print("\n")
 
-
-# 군집별 플랫폼 분포 시각화 및 플랫폼별 총 판매량
+# Visualize platform distribution by cluster and total sales by platform
 plt.figure(figsize=(14, 10))
 sns.countplot(data=df, x='Platform', hue='Cluster', palette='tab10')
 platform_sales = df.groupby('Platform')['Global_Sales'].sum().reset_index()
@@ -82,7 +78,7 @@ plt.legend(title='Cluster')
 plt.xticks(rotation=45)
 plt.show()
 
-# 군집별 장르 분포 시각화 및 장르별 총 판매량
+# Visualize genre distribution by cluster and total sales by genre
 plt.figure(figsize=(14, 10))
 sns.countplot(data=df, x='Genre', hue='Cluster', palette='tab10')
 genre_sales = df.groupby('Genre')['Global_Sales'].sum().reset_index()
@@ -95,17 +91,11 @@ plt.legend(title='Cluster')
 plt.xticks(rotation=45)
 plt.show()
 
-
-
-
-
-
-
-# 실루엣 점수 계산
+# Calculate silhouette score
 silhouette_avg = silhouette_score(df[numeric_features], df['Cluster'])
 print(f'Silhouette Score: {silhouette_avg:.2f}')
 
-# 실루엣 계수 시각화 함수
+# Function to visualize silhouette scores
 def plot_silhouette(n_clusters, features_scaled):
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     cluster_labels = kmeans.fit_predict(features_scaled)
@@ -133,9 +123,9 @@ def plot_silhouette(n_clusters, features_scaled):
     ax.set_xticks(np.linspace(-0.1, 1, 11))
     plt.show()
 
-# 클러스터 수 2, 3, 4, 5에 대한 실루엣 계수 시각화
+# Visualize silhouette scores for cluster numbers 2, 3, 4, 5
 for n_clusters in [2, 3, 4, 5]:
-    plot_silhouette(n_clusters, df[numeric_features])
+    plot_silhouette(n_clusters, features_scaled)
 
 # Elbow Method for optimal number of clusters
 ssd = []
