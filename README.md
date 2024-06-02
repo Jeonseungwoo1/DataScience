@@ -81,7 +81,11 @@ Categorical: Platform, Genre, Publisher, Developer
 
 
 
-
+## Developer
+*  **전승우** ([jaeseongDev](https://github.com/jaeseongDev))
+*  **김유신** 
+*  **김민재** 
+*  **임세은** 
 
 
 
